@@ -1,0 +1,54 @@
+db:
+  image: mongo
+  volumes:
+    - ./data/runtime/db:/data/db
+    - ./data/dump:/dump
+  command: mongod --smallfiles
+
+rocketchat:
+  image: rocketchat/rocket.chat:0.57.0-rc.3
+  environment:
+    - MAIL_URL=smtp://smtp.mandrillapp.com
+    - MONGO_URL=mongodb://db:27017/rocketchat
+    - ROOT_URL=https://community.storj.io
+    - Accounts_UseDNSDomainCheck=True
+  links:
+    - db:db
+  ports:
+    - 3000:3000
+
+hubot:
+# external scripts to add
+
+# hubot-pagerduty
+#HUBOT_PAGERDUTY_API_KEY - API Access Key
+#HUBOT_PAGERDUTY_SUBDOMAIN
+#HUBOT_PAGERDUTY_SERVICE_API_KEY - Service API Key from a 'General API Service'
+#HUBOT_PAGERDUTY_SCHEDULE_ID
+#HUBOT_PAGERDUTY_ROOM - Room in which you want the PagerDuty webhook notifications to appear
+#HUBOT_PAGERDUTY_ENDPOINT - PagerDuty webhook listener e.g /hook
+
+  image: hubot-rocketchat
+  environment:
+    - ROCKETCHAT_URL=http://rocketchat:3000
+    - ROCKETCHAT_ROOM=''
+    - LISTEN_ON_ALL_PUBLIC=true
+    - RESPOND_TO_DM=true
+    - ROCKETCHAT_USER=Storjio
+    - ROCKETCHAT_PASSWORD=password
+    - BOT_NAME=Storjio
+    - EXTERNAL_SCRIPTS=hubot-help,hubot-seen,hubot-links,hubot-baronbogo,hubot-gitsy,hubot-catme,google-translate,hubot-sentimental
+    - REDISTOGO_URL=redis://redis:6379
+  links:
+    - rocketchat:rocketchat
+    - redis:redis
+# this is used to expose the hubot port for notifications on the host on port 3001, e.g. for hubot-jenkins-notifier
+  ports:
+    - 3001:8080
+  volumes:
+    - ./hubot/scripts:/home/hubot/scripts
+
+redis:
+  image: redis
+  ports:
+    - "6379"
