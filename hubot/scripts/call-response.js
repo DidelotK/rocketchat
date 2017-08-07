@@ -17,7 +17,7 @@ if (fs.existsSync('/home/hubot/scripts/data')) {
 }
 
 var check;
-var validRooms = /Shell|storjioshouse|general/i;
+var validAdmins = /^(moby|heunland|meije|littleskunk|philip)$/i;
 
 module.exports = function(robot) {
   db.serialize(function() {
@@ -46,7 +46,7 @@ module.exports = function(robot) {
   });
 
   robot.respond(/create call: (.*)/i, function(res) {
-    if (res.message.room.match(validRooms)) {
+    if (res.message.user.name.match(validAdmins)) {
       if (!robot.unsavedCalls) {
         robot.unsavedCalls = {};
       }
@@ -62,7 +62,7 @@ module.exports = function(robot) {
   });
 
   robot.respond(/delete call: (.*)/i, function(res) {
-    if (res.message.room.match(validRooms)) {
+    if (res.message.user.name.match(validAdmins)) {
       var user = res.message.user.name;
       var call = res.match[1];
       robot.responses[call] = null;
@@ -77,7 +77,7 @@ module.exports = function(robot) {
   });
 
   robot.respond(/response: ((\n|.)*)/i, function(res) {
-    if (res.message.room.match(validRooms)) {
+    if (res.message.user.name.match(validAdmins)) {
       var user = res.message.user.name;
       if (!robot.unsavedCalls || !robot.unsavedCalls[user]) {
         return res.reply('There are no unsaved calls that require a response from you.');
